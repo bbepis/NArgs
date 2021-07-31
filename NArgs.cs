@@ -188,12 +188,17 @@ namespace NArgs
 			builder.AppendLine();
 			builder.AppendLine();
 
-			foreach (var command in commands.OrderBy(x => x.Key.ShortArg ?? "zzzz").ThenBy(x => x.Key.LongArg))
+			var orderedCommands = commands
+				.OrderByDescending(x => x.Key.Order)
+				.ThenBy(x => x.Key.ShortArg ?? "zzzz")
+				.ThenBy(x => x.Key.LongArg);
+
+			foreach (var command in orderedCommands)
 			{
 				var valueString = string.Empty;
-				
+
 				if (command.Value.PropertyType == typeof(IList<string>)
-				    || command.Value.PropertyType == typeof(string))
+					|| command.Value.PropertyType == typeof(string))
 				{
 					valueString = " <value>";
 				}
@@ -377,6 +382,11 @@ namespace NArgs
 		/// The description of the option, to be used in the help text.
 		/// </summary>
 		public string Description { get; set; } = null;
+
+		/// <summary>
+		/// Used in ordering this command in the help list.
+		/// </summary>
+		public int Order { get; set; } = 0;
 
 		/// <param name="longArg">The long version of an option, e.g. "--append".</param>
 		public CommandDefinitionAttribute(string longArg)
