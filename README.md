@@ -55,8 +55,9 @@ Usage: MyApp [options] <values>
   --collection <value>                       A collection of strings
 ```
 
-An argument class must inherit from `IArgumentCollection`. There are three property types supported:
+An argument class must inherit from `IArgumentCollection`. There are four property types supported:
 
 - `bool`: Is `true` if the argument was provided, `false` if not. `Required` is not applicable to this argument type.
 - `string`: Is set to the value of `--stringArg <value>`, otherwise `null` if not provided.
 - `IList<string>`: Similar to the above, however collects multiple values into a single list. Does *not* split the value on comma or anything else, instead appends multiple usages (i.e. `--listArg value1 --listArg value2`) into a single list. List is empty if not provided.
+- Any enum. Will parse a case-insensitive string value into an enum. Will throw if unable to parse the enum correctly.
