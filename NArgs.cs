@@ -219,31 +219,9 @@ namespace NArgs
 					builder.Append(listingWidthString);
 				}
 
-				int lineLength = 0;
-				int lastIndex = 0;
-				int currentIndex = 0;
-
 				if (!string.IsNullOrEmpty(command.Key.Description))
 				{
-					while ((currentIndex = command.Key.Description.IndexOf(' ', currentIndex + 1)) != -1)
-					{
-						if (currentIndex - lastIndex >= descriptionWidth)
-						{
-							var descriptionSubstring = command.Key.Description.Substring(lastIndex, lineLength);
-							builder.AppendLine(descriptionSubstring);
-							builder.Append(listingWidthString);
-
-							lastIndex += lineLength + 1;
-						}
-
-						lineLength = currentIndex - lastIndex;
-					}
-
-					if (lineLength > 0)
-					{
-						var remainingSubstring = command.Key.Description.Substring(lastIndex);
-						builder.AppendLine(remainingSubstring);
-					}
+					BuildArgumentDescription(builder, command.Key.Description, listingWidth, descriptionWidth);
 				}
 
 				builder.AppendLine();
@@ -252,6 +230,65 @@ namespace NArgs
 			builder.AppendLine();
 
 			return builder.ToString();
+		}
+
+		private static void BuildArgumentDescription(StringBuilder builder, string description, int listingWidth, int descriptionWidth)
+		{
+			int lineLength = 0;
+			int lineStartIndex = 0;
+			int lastValidLength = 0;
+
+			for (var index = 0; index < description.Length; index++)
+			{
+				char c = description[index];
+
+				void PrintLine()
+				{
+					var descriptionSubstring = description.Substring(lineStartIndex, lastValidLength);
+					builder.AppendLine(descriptionSubstring);
+					builder.Append(' ', listingWidth);
+
+					lineStartIndex = 1 + index - (lineLength - lastValidLength);
+					lineLength = 1 + index - lineStartIndex;
+					lastValidLength = lineLength;
+				}
+
+				if ((c == ' ' && lineLength >= descriptionWidth) | c == '\n')
+				{
+					bool printAgain = false;
+
+					if (c == '\n' && lineLength < descriptionWidth)
+						lastValidLength = lineLength;
+					else if (c == '\n')
+						printAgain = true;
+
+					PrintLine();
+
+					if (printAgain)
+					{
+						// This works and I'm not sure how.
+
+						lastValidLength--;
+						lineLength--;
+						PrintLine();
+						lastValidLength++;
+						lineLength++;
+					}
+
+					continue;
+				}
+
+				if (c == ' ')
+					lastValidLength = lineLength;
+
+				lineLength++;
+			}
+
+			if (lineLength > 0)
+			{
+				var remainingSubstring = description.Substring(lineStartIndex);
+				builder.AppendLine(remainingSubstring);
+			}
 		}
 
 		private static Dictionary<CommandDefinitionAttribute, PropertyInfo> GetCommandProperties<T>()
