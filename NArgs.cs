@@ -73,6 +73,16 @@ namespace NArgs
 						list.Add(x);
 					});
 				}
+				else if (typeof(Enum).IsAssignableFrom(kv.Value.PropertyType))
+				{
+					valueSwitches.Add(kv.Key, x =>
+					{
+						if (!Enum.TryParse(kv.Value.PropertyType, x, true, out var value))
+							throw new ArgumentException("Invalid value for argument: " + x);
+
+						kv.Value.SetValue(config, value);
+					});
+				}
 			}
 
 			CommandDefinitionAttribute previousSwitchDefinition = null;
@@ -187,9 +197,13 @@ namespace NArgs
 				{
 					valueString = " <value>";
 				}
+				else if (typeof(Enum).IsAssignableFrom(command.Value.PropertyType))
+				{
+					valueString = $" ({string.Join(" | ", Enum.GetNames(command.Value.PropertyType))})";
+				}
 
 				string listing = command.Key.ShortArg != null
-					? $"  -{command.Key.ShortArg}{valueString}, --{command.Key.LongArg}{valueString}"
+					? $"  -{command.Key.ShortArg}, --{command.Key.LongArg}{valueString}"
 					: $"  --{command.Key.LongArg}{valueString}";
 
 				const int listingWidth = 45;

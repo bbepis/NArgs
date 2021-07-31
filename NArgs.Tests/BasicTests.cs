@@ -6,6 +6,12 @@ namespace NArgs.Tests
 {
 	public class BasicTests
 	{
+		public enum TestEnum
+		{
+			DefaultValue,
+			Value1
+		}
+
 		public class TestArgs : IArgumentCollection
 		{
 			public IList<string> Values { get; set; }
@@ -18,6 +24,9 @@ namespace NArgs.Tests
 
 			[CommandDefinition("b", "boolArg")]
 			public bool BoolArg { get; set; }
+
+			[CommandDefinition("e", "enumArg")]
+			public TestEnum EnumArg { get; set; }
 		}
 
 		public class RequiredTestArgs : IArgumentCollection
@@ -39,6 +48,8 @@ namespace NArgs.Tests
 			Assert.IsEmpty(testArgs.StringListArg);
 
 			Assert.IsFalse(testArgs.BoolArg);
+
+			Assert.AreEqual(TestEnum.DefaultValue, testArgs.EnumArg);
 
 			Assert.IsNotNull(testArgs.Values);
 			Assert.IsEmpty(testArgs.Values);
@@ -70,6 +81,25 @@ namespace NArgs.Tests
 			var testArgs = Arguments.Parse<TestArgs>(args);
 
 			CollectionAssert.AreEqual(expectedValues.Split(";"), testArgs.StringListArg);
+		}
+		
+		[TestCase(TestEnum.DefaultValue, "--enumArg", "DefaultValue")]
+		[TestCase(TestEnum.DefaultValue, "--enumArg", "defaultvalue")]
+		[TestCase(TestEnum.Value1, "-e", "Value1")]
+		public void EnumTest(TestEnum expectedValue, params string[] args)
+		{
+			var testArgs = Arguments.Parse<TestArgs>(args);
+
+			Assert.AreEqual(expectedValue, testArgs.EnumArg);
+		}
+		
+		[Test]
+		public void InvalidEnumTest()
+		{
+			Assert.Throws<ArgumentException>(() =>
+			{
+				Arguments.Parse<TestArgs>(new [] { "--enumArg", "invalidValue" });
+			});
 		}
 		
 		[TestCase("test", "test")]
