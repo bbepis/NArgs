@@ -5,7 +5,7 @@ Just copy NArgs.cs into your project and you're ready to go.
 
 ### Usage
 
-```csharp=
+```cs
 using NArgs;
 
 class MyArguments : IArgumentCollection
