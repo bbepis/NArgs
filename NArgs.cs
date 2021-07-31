@@ -77,7 +77,7 @@ namespace NArgs
 				{
 					valueSwitches.Add(kv.Key, x =>
 					{
-						if (!Enum.TryParse(kv.Value.PropertyType, x, true, out var value))
+						if (!TryParseEnum(kv.Value.PropertyType, x, true, out var value))
 							throw new ArgumentException("Invalid value for argument: " + x);
 
 						kv.Value.SetValue(config, value);
@@ -321,6 +321,27 @@ namespace NArgs
 
 			value = default;
 			return false;
+		}
+
+		private static MethodInfo GenericTryParseMethodInfo = null;
+		private static bool TryParseEnum(Type enumType, string value, bool caseSensitive, out object val)
+		{
+			// Workaround for non-generic Enum.TryParse not being present below .NET 5
+
+			if (GenericTryParseMethodInfo == null)
+			{
+				GenericTryParseMethodInfo = typeof(Enum).GetMethods(BindingFlags.Public | BindingFlags.Static)
+					.First(x => x.Name == "TryParse" && x.GetGenericArguments().Length == 1 &&
+								x.GetParameters().Length == 3);
+			}
+
+			var objectArray = new object[] { value, caseSensitive, null };
+
+			var result = GenericTryParseMethodInfo.MakeGenericMethod(enumType)
+				.Invoke(null, objectArray);
+
+			val = objectArray[2];
+			return (bool)result;
 		}
 	}
 
