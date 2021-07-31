@@ -223,24 +223,27 @@ namespace NArgs
 				int lastIndex = 0;
 				int currentIndex = 0;
 
-				while ((currentIndex = command.Key.Description.IndexOf(' ', currentIndex + 1)) != -1)
+				if (!string.IsNullOrEmpty(command.Key.Description))
 				{
-					if (currentIndex - lastIndex >= descriptionWidth)
+					while ((currentIndex = command.Key.Description.IndexOf(' ', currentIndex + 1)) != -1)
 					{
-						var descriptionSubstring = command.Key.Description.Substring(lastIndex, lineLength);
-						builder.AppendLine(descriptionSubstring);
-						builder.Append(listingWidthString);
+						if (currentIndex - lastIndex >= descriptionWidth)
+						{
+							var descriptionSubstring = command.Key.Description.Substring(lastIndex, lineLength);
+							builder.AppendLine(descriptionSubstring);
+							builder.Append(listingWidthString);
 
-						lastIndex += lineLength + 1;
+							lastIndex += lineLength + 1;
+						}
+
+						lineLength = currentIndex - lastIndex;
 					}
 
-					lineLength = currentIndex - lastIndex;
-				}
-
-				if (lineLength > 0)
-				{
-					var remainingSubstring = command.Key.Description.Substring(lastIndex);
-					builder.AppendLine(remainingSubstring);
+					if (lineLength > 0)
+					{
+						var remainingSubstring = command.Key.Description.Substring(lastIndex);
+						builder.AppendLine(remainingSubstring);
+					}
 				}
 
 				builder.AppendLine();
