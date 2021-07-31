@@ -82,20 +82,6 @@ namespace NArgs.Tests
 			CollectionAssert.AreEqual(expectedValues.Split(";"), testArgs.Values);
 		}
 
-		class MyArguments : IArgumentCollection
-		{
-			public IList<string> Values { get; set; }
-
-			[CommandDefinition("r", "required", Description = "This is required", Required = true)]
-			public string RequiredArg { get; set; }
-
-			[CommandDefinition("collection", Description = "A collection of strings", Required = true)]
-			public IList<string> StringCollection { get; set; }
-
-			[CommandDefinition("h", "help", Description = "Prints help text")]
-			public bool Help { get; set; }
-		}
-
 		[Test]
 		public void RequiredTest()
 		{
@@ -107,9 +93,6 @@ namespace NArgs.Tests
 			Assert.DoesNotThrow(() => {
 				Arguments.Parse<RequiredTestArgs>(new [] { "-s", "value" });
 			});
-
-			Console.WriteLine(Arguments.PrintLongHelp<MyArguments>("MyApp v1.0.0, by me",
-				"Usage: MyApp [options] <values>"));
 		}
 	}
 }
